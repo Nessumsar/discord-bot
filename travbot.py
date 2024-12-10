@@ -65,10 +65,10 @@ def handle_user_messages(message) ->str:
         if mentioned_user.id not in woken_up_users:
             return f"{mentioned_user.name}, haven't woken up yet!"
     
-    if(content.startsWith("/")):
+    if(content.startswith("/")):
         return handle_commands(message)
     else:
-        return 'Unknown command'
+        return ''
 
 
 def handle_commands(message):
