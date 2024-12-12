@@ -1,5 +1,4 @@
 import discord
-from discord.ext import commands
 import json
 import os
 
@@ -33,18 +32,17 @@ async def view_checklist(interaction: discord.Interaction):
 
 
 async def add_task(interaction: discord.Interaction, village: str, task: str):
-    async def add_task(interaction: discord.Interaction, village: str, task: str):
-        data = load_checklist()
-        if village not in data:
-            data[village] = [{}]  # Initialize a new village with an empty task list
+    data = load_checklist()
+    if village not in data:
+        data[village] = [{}]  # Initialize a new village with an empty task list
 
-        # Add the task to the village (set to False by default)
-        if task not in data[village][0]:
-            data[village][0][task] = False
-            save_checklist(data)
-            await interaction.response.send_message(content=f"Task '{task}' added to {village}.")
-        else:
-            await interaction.response.send_message(content=f"Task '{task}' already exists in {village}.")
+    # Add the task to the village (set to False by default)
+    if task not in data[village][0]:
+        data[village][0][task] = False
+        save_checklist(data)
+        await interaction.response.send_message(content=f"Task '{task}' added to {village}.")
+    else:
+        await interaction.response.send_message(content=f"Task '{task}' already exists in {village}.")
 
 async def toggle_task(interaction: discord.Interaction, village: str, task: str):
     data = load_checklist()
