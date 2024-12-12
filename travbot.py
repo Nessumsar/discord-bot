@@ -13,7 +13,7 @@ intents.presences = True
 
 client = None
 
-def runBot():
+def run_bot():
     global client
     client = discord.Client(intents=intents)
 
@@ -31,7 +31,7 @@ def runBot():
     async def on_message(message):
         if message.author == client.user:
             return
-        await processMessage(message)
+        await process_message(message)
 
     @client.event
     async def on_presence_update(before, after):
@@ -40,10 +40,10 @@ def runBot():
     client.run(TOKEN)
 
 
-async def processMessage(message):
+async def process_message(message):
     try:
-        botfeedback = handle_user_messages(message)
-        await message.channel.send(botfeedback)
+        response = handle_user_messages(message)
+        await message.channel.send(response)
     except Exception as error:
         print(error)
 
@@ -54,12 +54,12 @@ def handle_user_messages(message) ->str:
         if mentioned_user.id not in presence.woken_up_users:
             return f"{mentioned_user.name}, haven't woken up yet!"
     
-    if(content.startswith("/")):
+    if content.startswith("/"):
         return handle_commands(message)
     else:
         return ''
 
 
 def handle_commands(message):
-    if (message == "/status"):
+    if message == "/status":
         return "Status x work in progress"
