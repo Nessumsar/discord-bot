@@ -3,6 +3,7 @@ from discord.ext import commands
 import os
 from dotenv import load_dotenv
 import presence
+import checklist
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -20,11 +21,12 @@ def run_bot():
 
     @bot.event
     async def on_ready():
-        for guild in bot.guilds:
-            print(
-                f'{bot.user} is connected to the following guild:\n'
-                f'{guild.name}(id: {guild.id})'
-            )
+        print(f"Bot is logged in as {bot.user}")
+        try:
+            synced = await bot.tree.sync()  # Syncs slash commands with Discord
+            print(f"Synced {len(synced)} commands!")
+        except Exception as e:
+            print(f"Error syncing commands: {e}")
         bot.loop.create_task(presence.reset_woken_up_users())
 
     @bot.event
@@ -36,6 +38,22 @@ def run_bot():
     @bot.event
     async def on_presence_update(before, after):
         await presence.welcome_member_waking_up(before, after, bot)
+
+    @bot.tree.command(name="checklist", description="View the shared checklist.")
+    async def view_checklist(interaction: discord.Interaction):
+        await checklist.view_checklist(interaction)
+
+    @bot.tree.command(name="add_task", description="Add a task to the shared checklist.")
+    async def add_task(interaction: discord.Interaction, village: str, task: str):
+        await checklist.add_task(interaction, village, task)
+
+    @bot.tree.command(name="toggle_task", description="Toggle the status of a task in the checklist.")
+    async def toggle_task(interaction: discord.Interaction, village: str, task: str):
+        await checklist.toggle_task(interaction, village, task)
+
+    @bot.tree.command(name="reset_checklist", description="Reset the shared checklist.")
+    async def reset_checklist(interaction: discord.Interaction):
+        await checklist.reset_checklist(interaction)
 
     bot.run(TOKEN)
 
