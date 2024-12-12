@@ -32,3 +32,11 @@ async def reset_woken_up_users():
 
         # Sleep for an hour and check again
         await asyncio.sleep(3600)
+
+async def check_if_mentioned_user_is_awake(message):
+    try:
+        for mentioned_user in message.mentions:
+            if mentioned_user.id not in woken_up_users:
+                await message.channel.send(f"{mentioned_user.name}, haven't woken up yet!")
+    except Exception as error:
+        print(error)

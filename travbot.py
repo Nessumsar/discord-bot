@@ -27,25 +27,15 @@ def run_bot():
             )
         bot.loop.create_task(presence.reset_woken_up_users())
 
-
     @bot.event
     async def on_message(message):
         if message.author == bot.user or not message.mentions:
             return
-        await check_if_mentioned_user_is_awake(message)
+        await presence.check_if_mentioned_user_is_awake(message)
 
     @bot.event
     async def on_presence_update(before, after):
         await presence.welcome_member_waking_up(before, after, bot)
 
     bot.run(TOKEN)
-
-
-async def check_if_mentioned_user_is_awake(message):
-    try:
-        for mentioned_user in message.mentions:
-            if mentioned_user.id not in presence.woken_up_users:
-                await message.channel.send(f"{mentioned_user.name}, haven't woken up yet!")
-    except Exception as error:
-        print(error)
 
