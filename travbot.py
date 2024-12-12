@@ -1,4 +1,5 @@
 import discord
+from discord.ext import commands
 import os
 from dotenv import load_dotenv
 import presence
@@ -11,55 +12,40 @@ intents.message_content = True
 intents.members = True
 intents.presences = True
 
-client = None
+bot = None
 
 def run_bot():
-    global client
-    client = discord.Client(intents=intents)
+    global bot
+    bot = commands.Bot(command_prefix='/', intents=intents)
 
-    @client.event
+    @bot.event
     async def on_ready():
-        for guild in client.guilds:
+        for guild in bot.guilds:
             print(
-                f'{client.user} is connected to the following guild:\n'
+                f'{bot.user} is connected to the following guild:\n'
                 f'{guild.name}(id: {guild.id})'
             )
-        client.loop.create_task(presence.reset_woken_up_users())
+        bot.loop.create_task(presence.reset_woken_up_users())
 
 
-    @client.event
+    @bot.event
     async def on_message(message):
-        if message.author == client.user:
+        if message.author == bot.user or not message.mentions:
             return
-        await process_message(message)
+        await check_if_mentioned_user_is_awake(message)
 
-    @client.event
+    @bot.event
     async def on_presence_update(before, after):
-        await presence.welcome_member_waking_up(before, after, client)
+        await presence.welcome_member_waking_up(before, after, bot)
 
-    client.run(TOKEN)
+    bot.run(TOKEN)
 
 
-async def process_message(message):
+async def check_if_mentioned_user_is_awake(message):
     try:
-        response = handle_user_messages(message)
-        await message.channel.send(response)
+        for mentioned_user in message.mentions:
+            if mentioned_user.id not in presence.woken_up_users:
+                await message.channel.send(f"{mentioned_user.name}, haven't woken up yet!")
     except Exception as error:
         print(error)
 
-
-def handle_user_messages(message) ->str:
-    content = message.content.lower()
-    for mentioned_user in message.mentions:
-        if mentioned_user.id not in presence.woken_up_users:
-            return f"{mentioned_user.name}, haven't woken up yet!"
-    
-    if content.startswith("/"):
-        return handle_commands(message)
-    else:
-        return ''
-
-
-def handle_commands(message):
-    if message == "/status":
-        return "Status x work in progress"

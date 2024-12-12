@@ -6,8 +6,8 @@ import pytz
 local_tz = pytz.timezone('Europe/Stockholm')
 woken_up_users = set()
 
-async def welcome_member_waking_up(before, after, client):
-    channel = client.get_channel(1315675558163648562)
+async def welcome_member_waking_up(before, after, bot):
+    channel = bot.get_channel(1315675558163648562)
     for member in channel.members:
         if after == member:
             if before.status != after.status and after.status == discord.Status.online:
