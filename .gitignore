@@ -16,3 +16,6 @@ venv/
 # Ignore system-specific files
 .DS_Store
 Thumbs.db
+
+#Ignore custom checklist file
+shared_checklist.json
