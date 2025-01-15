@@ -1,16 +1,28 @@
 import discord
 import json
 import os
+from models import Group, Task
+from typing import List
 
 CHECKLIST_FILE = "shared_checklist.json"
 
-def load_checklist():
+
+def load_checklist() -> List[Group]:
     if os.path.exists(CHECKLIST_FILE):
         with open(CHECKLIST_FILE, "r") as file:
-            return json.load(file)
+            data = json.load(file)
+            groups = []
+            for group_name, task_dicts in data.items():
+                tasks = [Task(name=task_name, completed=completed) for task_name, completed in task_dicts[0].items()]
+                groups.append(Group(name=group_name, tasks=tasks))
+            return groups
     return {}
 
-def save_checklist(data):
+
+def save_checklist(groups: List[Group]) -> None:
+    data = {
+        group.name: [{task.name: task.completed for task in group.tasks}] for group in groups
+    }
     with open(CHECKLIST_FILE, "w") as file:
         json.dump(data, file, indent=4)
 
@@ -21,39 +33,70 @@ async def view_checklist(interaction: discord.Interaction):
         await interaction.response.send_message(content="The checklist is empty!")
         return
 
-    response = "Shared Checklist:\n"
-    for group, tasks in data.items():
-        response += f"\n**{group}**:\n"
-        for task in tasks[0]:  # Assuming only one task dictionary per group
-            status = '✅' if tasks[0][task] else '❌'
-            response += f"- {task}: {status}\n"
+    message_lines = ["Shared Checklist:"]
+    for group_index, group in enumerate(data):
+        message_lines.append(f"\n**{group_index+1}: {group.name}**:")
+        for task_index, task in enumerate(group.tasks):  # Assuming only one task dictionary per group
+            status = '✅' if task.completed else '❌'
+            message_lines.append(f"\t{task_index+1}: {task.name} {status}")
 
+    response = "\n".join(message_lines)
     await interaction.response.send_message(content=response)
 
 
-async def add_task(interaction: discord.Interaction, group: str, task: str):
-    data = load_checklist()
-    if group not in data:
-        data[group] = [{}]  # Initialize a new group with an empty task list
+async def add_group(interaction: discord.Interaction, group_name: str):
+    groups = load_checklist()
 
-    # Add the task to the group (set to False by default)
-    if task not in data[group][0]:
-        data[group][0][task] = False
-        save_checklist(data)
-        await interaction.response.send_message(content=f"Task '{task}' added to {group}.")
-    else:
-        await interaction.response.send_message(content=f"Task '{task}' already exists in {group}.")
-
-async def toggle_task(interaction: discord.Interaction, group: str, task: str):
-    data = load_checklist()
-    if group not in data or task not in data[group][0]:
-        await interaction.response.send_message(content=f"Task '{task}' not found in {group}.")
+    if any(group.name == group_name for group in groups):
+        await interaction.response.send_message(f"A group named '{group_name}' already exists.")
         return
 
-    data[group][0][task] = not data[group][0][task]
+    new_group = Group(name=group_name, tasks=[])
+    groups.append(new_group)
+    save_checklist(groups)
+    await interaction.response.send_message(f"Group '{group_name}' has been created successfully with no tasks.")
+
+
+async def add_task(interaction: discord.Interaction, group_index: int, task_name: str):
+    group_index = group_index - 1 #Decrement by 1 to offset lists starting on 0
+    data = load_checklist()
+
+    if group_index < 0 or group_index >= len(data):
+        await interaction.response.send_message(f"Invalid group index provided: {group_index+1}")
+        return
+
+    group = data[group_index]
+
+    if any(task.name == task_name for task in group.tasks):
+        await interaction.response.send_message(f"Task '{task_name}' already exists in group '{group.name}'.")
+        return
+
+    data[group_index].tasks.append(Task(name=task_name))
     save_checklist(data)
-    status = "✅" if data[group][0][task] else "❌"
-    await interaction.response.send_message(content=f"Task '{task}' in {group} is now {status}.")
+    await interaction.response.send_message(content=f"Task '{task_name}' added to {group.name}.")
+
+
+async def toggle_task(interaction: discord.Interaction, group_index: int, task_index: int):
+    group_index = group_index - 1
+    task_index = task_index - 1 # Decrement by 1 to offset lists starting on 0
+    data = load_checklist()
+
+    if group_index < 0 or group_index >= len(data):
+        await interaction.response.send_message("Invalid group index provided.")
+        return
+
+    group = data[group_index]
+    if group not in data or group.get_task_by_index(task_index) is None:
+        print(group.tasks)
+        await interaction.response.send_message(content=f"Task '{task_index+1}' not found in {group.name}.")
+        return
+
+    task = group.get_task_by_index(task_index)
+    task.completed = not task.completed
+    save_checklist(data)
+    status = "✅" if task.completed else "❌"
+    await interaction.response.send_message(content=f"Task '{task_index+1}' in {group.name} is now {status}.")
+
 
 async def reset_checklist(interaction: discord.Interaction):
     save_checklist({})
