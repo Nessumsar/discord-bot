@@ -45,7 +45,6 @@ def run_bot():
 
     @bot.tree.command(name="add_group", description="Add a group to the shared checklist.")
     async def add_group(interaction: discord.Interaction, group_name: str):
-        print(f"Adding group: {group_name}")  # Debugging print
         await checklist.add_group(interaction, group_name)
 
     @bot.tree.command(name="add_task", description="Add a task to the shared checklist.")
