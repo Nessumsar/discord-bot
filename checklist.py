@@ -16,7 +16,7 @@ def load_checklist() -> List[Group]:
                 tasks = [Task(name=task_name, completed=completed) for task_name, completed in task_dicts[0].items()]
                 groups.append(Group(name=group_name, tasks=tasks))
             return groups
-    return {}
+    return []
 
 
 def save_checklist(groups: List[Group]) -> None:
@@ -99,5 +99,5 @@ async def toggle_task(interaction: discord.Interaction, group_index: int, task_i
 
 
 async def reset_checklist(interaction: discord.Interaction):
-    save_checklist({})
+    save_checklist([])
     await interaction.response.send_message(content="The checklist has been reset!")
