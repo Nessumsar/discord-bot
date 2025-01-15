@@ -44,12 +44,12 @@ def run_bot():
         await checklist.view_checklist(interaction)
 
     @bot.tree.command(name="add_task", description="Add a task to the shared checklist.")
-    async def add_task(interaction: discord.Interaction, village: str, task: str):
-        await checklist.add_task(interaction, village, task)
+    async def add_task(interaction: discord.Interaction, group: str, task: str):
+        await checklist.add_task(interaction, group, task)
 
     @bot.tree.command(name="toggle_task", description="Toggle the status of a task in the checklist.")
-    async def toggle_task(interaction: discord.Interaction, village: str, task: str):
-        await checklist.toggle_task(interaction, village, task)
+    async def toggle_task(interaction: discord.Interaction, group: str, task: str):
+        await checklist.toggle_task(interaction, group, task)
 
     @bot.tree.command(name="reset_checklist", description="Reset the shared checklist.")
     async def reset_checklist(interaction: discord.Interaction):
