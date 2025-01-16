@@ -47,6 +47,10 @@ def run_bot():
     async def add_group(interaction: discord.Interaction, group_name: str):
         await checklist.add_group(interaction, group_name)
 
+    @bot.tree.command(name="remove_group", description="Remove a group from the shared checklist.")
+    async def remove_group(interaction: discord.Interaction, group_index: int):
+        await checklist.remove_group(interaction, group_index)
+
     @bot.tree.command(name="add_task", description="Add a task to the shared checklist.")
     async def add_task(interaction: discord.Interaction, group_index: int, task_name: str):
         await checklist.add_task(interaction, group_index, task_name)
@@ -54,6 +58,10 @@ def run_bot():
     @bot.tree.command(name="toggle_task", description="Toggle the status of a task in the checklist.")
     async def toggle_task(interaction: discord.Interaction, group_index: int, task_index: int):
         await checklist.toggle_task(interaction, group_index, task_index)
+
+    @bot.tree.command(name="remove_task", description="Remove a task from the shared checklist.")
+    async def remove_task(interaction: discord.Interaction, group_index: int, task_index: int):
+        await checklist.remove_task(interaction, group_index, task_index)
 
     @bot.tree.command(name="reset_checklist", description="Reset the shared checklist.")
     async def reset_checklist(interaction: discord.Interaction):
