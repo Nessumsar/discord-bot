@@ -45,16 +45,16 @@ async def view_checklist(interaction: discord.Interaction):
 
 
 async def add_group(interaction: discord.Interaction, group_name: str):
-    groups = load_checklist()
+    data = load_checklist()
 
-    if any(group.name == group_name for group in groups):
+    if any(group.name == group_name for group in data):
         print(f"A group named '{group_name}' already exists.")
         await interaction.response.send_message(f"A group named '{group_name}' already exists.")
         return
 
     new_group = Group(name=group_name, tasks=[])
-    groups.append(new_group)
-    save_checklist(groups)
+    data.append(new_group)
+    save_checklist(data)
     print(f"Group '{group_name}' has been created successfully with no tasks.")
     await interaction.response.send_message(f"Group '{group_name}' has been created successfully with no tasks.")
 
