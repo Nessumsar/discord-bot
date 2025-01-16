@@ -59,6 +59,22 @@ async def add_group(interaction: discord.Interaction, group_name: str):
     await interaction.response.send_message(f"Group '{group_name}' has been created successfully with no tasks.")
 
 
+async def remove_group(interaction: discord.Interaction, group_index: int):
+    group_index = group_index - 1  # Decrement by 1 to offset lists starting on 0
+    data = load_checklist()
+
+    if group_index < 0 or group_index >= len(data):
+        print(f"Invalid group index provided: {group_index}")
+        await interaction.response.send_message(f"Invalid group index provided: {group_index+1}")
+        return
+
+    group_name = data[group_index].name
+    data[:] = [group for group in data if group.name != group_name]
+    save_checklist(data)
+    print(f"Group '{group_name}' has been removed successfully.")
+    await interaction.response.send_message(f"Group '{group_name}' has been removed successfully.")
+
+
 async def add_task(interaction: discord.Interaction, group_index: int, task_name: str):
     group_index = group_index - 1 #Decrement by 1 to offset lists starting on 0
     data = load_checklist()
@@ -69,7 +85,6 @@ async def add_task(interaction: discord.Interaction, group_index: int, task_name
         return
 
     group = data[group_index]
-
     if any(task.name == task_name for task in group.tasks):
         print(f"Task '{task_name}' already exists in group '{group.name}'.")
         await interaction.response.send_message(f"Task '{task_name}' already exists in group '{group.name}'.")
@@ -103,6 +118,29 @@ async def toggle_task(interaction: discord.Interaction, group_index: int, task_i
     status = "✅" if task.completed else "❌"
     print(f"Task '{task_index+1}' in {group.name} is now {status}.")
     await interaction.response.send_message(f"Task '{task_index+1}' in {group.name} is now {status}.")
+
+
+async def remove_task(interaction: discord.Interaction, group_index: int, task_index: int):
+    group_index = group_index - 1
+    task_index = task_index - 1 #Decrement by 1 to offset lists starting on 0
+    data = load_checklist()
+
+    if group_index < 0 or group_index >= len(data):
+        print(f"Invalid group index provided: {group_index}")
+        await interaction.response.send_message(f"Invalid group index provided: {group_index+1}")
+        return
+
+    group = data[group_index]
+    if group not in data or group.get_task_by_index(task_index) is None:
+        print(f"Task '{task_index+1}' not found in {group.name}.")
+        await interaction.response.send_message(f"Task '{task_index+1}' not found in {group.name}.")
+        return
+
+    group.delete_task_by_index(task_index)
+    data[group_index] = group
+    save_checklist(data)
+    print(f"Task '{task_index}' deleted from {group.name}.")
+    await interaction.response.send_message(f"Task '{task_index+1}' deleted from {group.name}.")
 
 
 async def reset_checklist(interaction: discord.Interaction):
