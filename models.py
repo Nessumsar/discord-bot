@@ -21,3 +21,8 @@ class Group:
             if task.name == task_name:
                 return i
         raise ValueError(f"Task '{task_name}' not found in group '{self.name}'.")
+
+    def delete_task_by_index(self, index):
+        if index < 0 or index >= len(self.tasks):
+            raise IndexError(f"Task index {index} is out of range.")
+        self.tasks.pop(index)
